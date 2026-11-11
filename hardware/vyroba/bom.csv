@@ -1,0 +1,32 @@
+﻿Označení;Počet;Hodnota;Pouzdro;Výrobce;MPN;Montáž;Osadit;Popis
+BZ1;1;Bzučák 3V;Buzzer_12x9.5RM7.6;Generic;Pasivní magnetický bzučák 12×9,5 mm, 3 V (např. HYT-1205);THT (ručně);ano;Akustická signalizace měření
+C1,C2,C3,C4,C5,C9;6;10u;C_0805_2012Metric;Samsung / Murata;0805 10u X5R/X7R ≥10V;SMD;ano;Kondenzátor MLCC (blokování / filtrace)
+C10;1;10n;C_0805_2012Metric;Samsung / Murata;0805 10n X5R/X7R ≥10V;SMD;ano;Měkký start laseru
+C6,C8;2;100n;C_0805_2012Metric;Samsung / Murata;0805 100n X5R/X7R ≥10V;SMD;ano;Kondenzátor MLCC (blokování / filtrace)
+C7;1;1u;C_0805_2012Metric;Samsung / Murata;0805 1u X5R/X7R ≥10V;SMD;ano;Zpoždění resetu
+D1;1;B5819W;D_SOD-123;Diodes / SL;B5819W;SMD;ano;Schottky – napájení z USB
+D2;1;LED červená;LED_0805_2012Metric;Everlight / Hubei;LED 0805 červená;SMD;ano;Svítí = nabíjí se
+D3;1;LED zelená;LED_0805_2012Metric;Everlight / Hubei;LED 0805 zelená;SMD;ano;Svítí = nabito
+D4;1;1N4148W;D_SOD-123;Diodes / SL;1N4148W;SMD;ano;Ochranná dioda bzučáku
+D5;1;LED modrá;LED_0805_2012Metric;Everlight / Hubei;LED 0805 modrá;SMD;ano;Stav Bluetooth
+J1;1;USB-C;USB_C_Receptacle_HRO_TYPE-C-31-M-12;Korean Hroparts;TYPE-C-31-M-12;SMD;ano;USB-C konektor (nabíjení + programování)
+J2;1;LASER;PinHeader_1x05_P2.54mm_Vertical;Generic;Kolíková lišta 1×5, 2,54 mm;THT (ručně);ano;Laser modul: 1 VCC, 2 GND, 3 TX modulu, 4 RX modulu, 5 AUX
+J3;1;OLED;PinSocket_1x04_P2.54mm_Vertical;Generic;Dutinková lišta 1×4, 2,54 mm;THT (ručně);ano;"OLED 0,96"" SSD1306 I2C: GND, VCC, SCL, SDA"
+J4;1;BATERIE;JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical;JST;B2B-PH-K-S;THT (ručně);ano;Konektor LiPo baterie (JST-PH 2,0 mm) – POZOR NA POLARITU
+JP1;1;LASER_V;SolderJumper-3_P1.3mm_Bridged12_RoundedPad1.0x1.5mm;-;(pájecí propojka na DPS);SMD;ne (propojka);Volba napájení laseru: 1-2 = 3,3 V (výchozí), 2-3 = baterie
+Q1,Q2;2;AO3401A;SOT-23;Alpha & Omega;AO3401A;SMD;ano;"P-MOSFET – přepínání baterie/USB (load sharing); Spínač napájení laser modulu"
+Q3,Q4;2;AO3400A;SOT-23;Alpha & Omega;AO3400A;SMD;ano;"Budič spínače laseru; Spínač bzučáku"
+R1,R2;2;5.1k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 5.1k 1%;SMD;ano;Rezistor (pull-up / dělič / omezení proudu)
+R13;1;47k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 47k 1%;SMD;ano;Detekce USB (horní)
+R14;1;68k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 68k 1%;SMD;ano;Detekce USB (dolní)
+R3;1;2.2k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 2.2k 1%;SMD;ano;Nabíjecí proud ≈ 450 mA (1000/R)
+R4,R5,R19;3;1k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 1k 1%;SMD;ano;Rezistor (pull-up / dělič / omezení proudu)
+R6,R11,R12,R15,R16,R18;6;100k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 100k 1%;SMD;ano;Rezistor (pull-up / dělič / omezení proudu)
+R7,R8,R9,R10,R17,R20;6;10k;R_0805_2012Metric;UNI-ROYAL / Yageo;0805 10k 1%;SMD;ano;Rezistor (pull-up / dělič / omezení proudu)
+SW1;1;ON/OFF;SW_Slide_SPDT_Angled_CK_OS102011MA1Q;C&K;OS102011MA1QN1;THT (ručně);ano;Hlavní vypínač (posuvný, úhlový – ovládá se z boku krabičky)
+SW2;1;MĚŘIT;SW_PUSH_6mm_H13mm;XKB / Omron;TS-1187A / B3F-1070 (6×6 mm, výška 13 mm);THT (ručně);ano;Tlačítko MĚŘIT (zároveň BOOT)
+SW3;1;REŽIM;SW_PUSH_6mm_H13mm;XKB / Omron;TS-1187A / B3F-1070 (6×6 mm, výška 13 mm);THT (ručně);ano;Tlačítko REŽIM / laser zap
+U1;1;USBLC6-2SC6;SOT-23-6;STMicroelectronics;USBLC6-2SC6;SMD;ano;ESD ochrana USB datových linek
+U2;1;MCP73831-2-OT;SOT-23-5;Microchip;MCP73831T-2ACI/OT;SMD;ano;Nabíječka 1článku Li-Ion/LiPo 4,2 V
+U3;1;AP2112K-3.3;SOT-23-5;Diodes Inc.;AP2112K-3.3TRG1;SMD;ano;LDO stabilizátor 3,3 V / 600 mA
+U4;1;ESP32-C3-WROOM-02-N4;ESP32-C3-WROOM-02;Espressif;ESP32-C3-WROOM-02-N4;SMD;ano;Mikrokontrolér s Bluetooth LE 5.0

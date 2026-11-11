@@ -1,0 +1,17 @@
+# PlatformIO
+firmware/.pio/
+firmware/.vscode/
+# firmware pro web flasher se generuje v CI
+app/firmware/
+# KiCad zálohy a dočasné soubory
+hardware/kicad/*-backups/
+hardware/kicad/*.kicad_prl
+hardware/kicad/fp-info-cache
+hardware/kicad/*.lck
+hardware/kicad/laserplan.dsn
+hardware/kicad/laserplan.ses
+# Python
+__pycache__/
+*.pyc
+# Node
+node_modules/

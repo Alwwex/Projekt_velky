@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nahrát firmware</title>
+  <meta name="theme-color" content="#14161c">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <style>
+    :root { --bg: #0f1116; --panel: #191c24; --line: #2c313e; --text: #e9ecf2; --muted: #8d94a5; --accent: #ffb020; color-scheme: dark; }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) { --bg: #f3f4f7; --panel: #fff; --line: #d9dde6; --text: #161a22; --muted: #5f6777; --accent: #f29900; color-scheme: light; }
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 640px; margin: 0 auto; padding: 32px 16px 48px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-top: 16px; }
+    h1 { font-size: 26px; margin: 0 0 6px; } p, li { color: var(--muted); } b { color: var(--text); }
+    a { color: var(--accent); }
+    esp-web-install-button button[slot="activate"] {
+      background: var(--accent); color: #1b1300; border: 0; border-radius: 12px; padding: 14px 22px; font-weight: 700; font-size: 17px; cursor: pointer;
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.1.0/dist/web/install-button.js?module"></script>
+</head>
+<body>
+  <main>
+    <h1>Nahrát firmware do laseru</h1>
+    <p>Firmware LaserPlan pro ESP32-C3 nahraješ přímo z prohlížeče <b>Chrome</b> nebo <b>Edge</b> na počítači – bez instalace čehokoli.</p>
+    <div class="card">
+      <ol>
+        <li>Přepni vypínač laseru na <b>ON</b> a připoj ho USB-C kabelem k počítači.</li>
+        <li>Klikni na tlačítko a vyber port <b>USB JTAG/serial debug unit</b>.</li>
+        <li>Pokud se zařízení neozve: drž tlačítko <b>MĚŘIT</b>, přepni vypínač OFF → ON, pusť tlačítko a zkus to znovu.</li>
+      </ol>
+      <esp-web-install-button manifest="firmware/manifest.json">
+        <button slot="activate">Nahrát firmware</button>
+        <span slot="unsupported">Tento prohlížeč neumí Web Serial – použij Chrome nebo Edge na počítači.</span>
+        <span slot="not-allowed">Stránka musí běžet přes HTTPS.</span>
+      </esp-web-install-button>
+    </div>
+    <p><a href="index.html">← zpět do aplikace</a></p>
+  </main>
+</body>
+</html>

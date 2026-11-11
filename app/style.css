@@ -1,0 +1,198 @@
+/* LaserPlan – vzhled (tmavý jako na stavbě; světlý dle systému) */
+:root {
+  --bg: #0f1116;
+  --panel: #191c24;
+  --panel-2: #222632;
+  --line: #2c313e;
+  --text: #e9ecf2;
+  --muted: #8d94a5;
+  --accent: #ffb020;        /* oranžová – vybraná stěna, tlačítko MĚŘIT */
+  --accent-ink: #1b1300;
+  --measured: #2f5bff;      /* modrá – naměřený rozměr */
+  --measured-ink: #ffffff;
+  --computed: #6f8dff;
+  --danger: #ff5a5f;
+  --ok: #33d17a;
+  --wall: #f4f6fb;
+  --room-fill: rgba(120, 140, 200, 0.07);
+  --grid: rgba(255, 255, 255, 0.045);
+  --grid-major: rgba(255, 255, 255, 0.09);
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3f4f7; --panel: #ffffff; --panel-2: #eef0f5; --line: #d9dde6; --text: #161a22; --muted: #5f6777;
+    --wall: #1c2230; --room-fill: rgba(47, 91, 255, 0.06); --grid: rgba(0, 0, 0, 0.05); --grid-major: rgba(0, 0, 0, 0.1);
+    --shadow: 0 10px 30px rgba(20, 30, 60, 0.15); --accent: #f29900; color-scheme: light;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 15px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+button, input, select { font: inherit; color: inherit; }
+svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- horní lišta */
+.topbar {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  background: var(--panel); border-bottom: 1px solid var(--line); min-height: 52px;
+}
+.brand { display: flex; align-items: center; gap: 6px; font-weight: 700; letter-spacing: .2px; }
+.brand .logo { color: var(--accent); }
+.project-name {
+  background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px;
+  min-width: 0; width: 220px; max-width: 30vw; color: var(--muted);
+}
+.project-name:focus { outline: none; border-color: var(--line); color: var(--text); -webkit-user-select: text; user-select: text; }
+.spacer { flex: 1; }
+.chip {
+  display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--line); cursor: pointer; white-space: nowrap;
+}
+.chip .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.chip.connected .dot { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.chip.connecting .dot { background: var(--accent); animation: blink 1s infinite; }
+.batt { font-size: 12px; color: var(--muted); }
+@keyframes blink { 50% { opacity: .3; } }
+.units { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+.icon-btn { background: transparent; border: 0; padding: 6px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+.icon-btn:hover { background: var(--panel-2); }
+.icon-btn.small svg { width: 18px; height: 18px; }
+
+/* ---------- plocha */
+.stage { position: relative; overflow: hidden; }
+#canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+.toolbar {
+  position: absolute; z-index: 2; left: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px; box-shadow: var(--shadow);
+}
+.tool {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; width: 58px; padding: 7px 2px;
+  background: transparent; border: 0; border-radius: 9px; cursor: pointer; color: var(--muted); font-size: 11px;
+}
+.tool:hover { background: var(--panel-2); color: var(--text); }
+.tool.active { background: var(--accent); color: var(--accent-ink); }
+.tool.danger:hover { color: var(--danger); }
+.tool:disabled { opacity: .35; pointer-events: none; }
+.toolbar .sep { height: 1px; background: var(--line); margin: 4px 6px; }
+
+.hint {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 1;
+  background: var(--panel); border: 1px solid var(--line); padding: 8px 14px; border-radius: 999px;
+  color: var(--muted); font-size: 14px; box-shadow: var(--shadow); white-space: nowrap; max-width: calc(100% - 100px);
+  overflow: hidden; text-overflow: ellipsis; transition: opacity .3s;
+}
+.hint.hidden { opacity: 0; pointer-events: none; }
+
+.wall-panel {
+  position: absolute; right: 12px; top: 12px; z-index: 2; width: 270px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow);
+}
+.wp-head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; }
+.wp-value { font-size: 30px; font-weight: 700; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.wp-state { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.wp-state.measured { color: var(--measured); } .wp-state.computed { color: var(--computed); }
+.wp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.wp-actions .btn { padding: 8px 6px; font-size: 13px; white-space: normal; }
+.wp-actions .accent { grid-column: 1 / -1; }
+.room-info {
+  position: absolute; right: 12px; bottom: 12px; z-index: 2; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 10px 12px; font-size: 13px; color: var(--muted); box-shadow: var(--shadow);
+}
+.room-info b { color: var(--text); }
+.room-info .bad { color: var(--danger); font-weight: 600; }
+.room-info .good { color: var(--ok); font-weight: 600; }
+
+/* ---------- spodní lišta */
+.bottombar {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: var(--panel); border-top: 1px solid var(--line);
+}
+.reading { flex: 1; min-width: 0; }
+.last-value { font-size: 28px; font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.last-info { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn {
+  border: 1px solid var(--line); background: var(--panel-2); padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  font-weight: 600; white-space: nowrap;
+}
+.btn:hover { filter: brightness(1.12); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.accent { background: var(--measured); color: var(--measured-ink); border-color: transparent; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .4; pointer-events: none; }
+.btn.on { background: var(--danger); color: #fff; border-color: transparent; }
+.measure { min-width: 140px; font-size: 20px; padding: 14px 22px; border-radius: 14px; letter-spacing: .5px; }
+.ref { display: flex; align-items: center; gap: 8px; }
+.ref-icon { width: 32px; height: 16px; stroke-width: 1.5; }
+.ref-icon .mark { fill: var(--accent); stroke: none; }
+
+/* ---------- dialogy */
+.dialog {
+  border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--text);
+  width: min(560px, calc(100vw - 24px)); padding: 18px; box-shadow: var(--shadow);
+}
+.dialog.small { width: min(380px, calc(100vw - 24px)); }
+.dialog::backdrop { background: rgba(0, 0, 0, .5); backdrop-filter: blur(2px); }
+.dialog h2 { margin: 0 0 12px; font-size: 20px; }
+.dialog h3 { margin: 16px 0 8px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.row.end { justify-content: flex-end; }
+.note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+.note.warn { color: var(--accent); }
+fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 14px 0 0; padding: 10px 12px; }
+fieldset:disabled { opacity: .5; }
+legend { color: var(--muted); font-size: 13px; padding: 0 6px; }
+.check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; cursor: pointer; }
+.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); }
+input:not([type]), input[inputmode] {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; flex: 1;
+  -webkit-user-select: text; user-select: text;
+}
+.big-input { width: 100%; font-size: 26px; font-weight: 700; text-align: center; }
+.dev-info { background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--muted); }
+.dev-info b { color: var(--text); }
+.calib { margin-top: 10px; font-size: 13px; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.link-btn { text-decoration: none; text-align: center; grid-column: 1 / -1; }
+.project-list { list-style: none; margin: 0; padding: 0; max-height: 200px; overflow: auto; }
+.project-list li { display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.project-list li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-list small { color: var(--muted); }
+.project-list .empty { color: var(--muted); border: 0; }
+.help { padding-left: 20px; } .help li { margin: 6px 0; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(20px); opacity: 0;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 12px;
+  box-shadow: var(--shadow); transition: all .25s; pointer-events: none; z-index: 20; max-width: calc(100vw - 32px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+.toast.ok { border-color: var(--ok); }
+
+/* ---------- telefon na výšku */
+@media (max-width: 720px) {
+  .brand span, .project-name { display: none; }
+  .toolbar { left: 6px; top: 6px; padding: 4px; }
+  .tool { width: 46px; padding: 6px 2px; font-size: 10px; }
+  .tool svg { width: 20px; height: 20px; }
+  .hint { top: auto; bottom: 10px; font-size: 12px; white-space: normal; text-align: center; border-radius: 12px; width: calc(100% - 80px); left: calc(50% + 28px); }
+  .wall-panel { width: auto; left: 64px; right: 8px; top: 8px; }
+  .wp-value { font-size: 24px; }
+  .bottombar { gap: 6px; padding: 8px; }
+  .last-value { font-size: 22px; }
+  .btn { padding: 9px 10px; }
+  #refText { display: none; }
+  .measure { min-width: 96px; font-size: 17px; padding: 12px 14px; }
+  .room-info { bottom: 64px; right: 8px; }
+}

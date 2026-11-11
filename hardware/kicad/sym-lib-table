@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "LaserPlan")(type "KiCad")(uri "${KIPRJMOD}/laserplan.kicad_sym")(options "")(descr "Symboly projektu LaserPlan"))
+)

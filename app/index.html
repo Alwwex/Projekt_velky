@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>LaserPlan</title>
+  <meta name="description" content="Náčrt půdorysu s laserovým metrem přes Bluetooth">
+  <meta name="theme-color" content="#14161c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" aria-label="LaserPlan">
+      <svg viewBox="0 0 24 24" class="logo" aria-hidden="true"><path d="M3 21V5l8-2v18M11 9h10v12H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="15" r="1.6" fill="currentColor"/></svg>
+      <span>LaserPlan</span>
+    </div>
+    <input id="projectName" class="project-name" aria-label="Název půdorysu" value="Nový půdorys" maxlength="60">
+    <div class="spacer"></div>
+    <button id="btnDevice" class="chip" aria-haspopup="dialog">
+      <span class="dot" id="devDot"></span>
+      <span id="devName">Připojit laser</span>
+      <span id="devBatt" class="batt" hidden></span>
+    </button>
+    <select id="units" aria-label="Jednotky" class="units">
+      <option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option><option value="ft">ft-in</option>
+    </select>
+    <button id="btnMenu" class="icon-btn" aria-label="Menu" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </header>
+
+  <main class="stage">
+    <nav class="toolbar" aria-label="Nástroje">
+      <button class="tool active" data-tool="draw" title="Kreslit místnost (D)" aria-label="Kreslit">
+        <svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4zM14 6l3 3"/></svg><span>Kreslit</span>
+      </button>
+      <button class="tool" data-tool="select" title="Vybrat stěnu (V)" aria-label="Vybrat">
+        <svg viewBox="0 0 24 24"><path d="M6 3l12 9-5 1 3 6-2 1-3-6-4 4z"/></svg><span>Vybrat</span>
+      </button>
+      <button class="tool" data-tool="move" title="Posunout místnost (P)" aria-label="Posunout">
+        <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg><span>Posun</span>
+      </button>
+      <div class="sep"></div>
+      <button id="btnUndo" class="tool" title="Zpět (Ctrl+Z)" aria-label="Zpět">
+        <svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-4"/></svg><span>Zpět</span>
+      </button>
+      <button id="btnRedo" class="tool" title="Znovu (Ctrl+Y)" aria-label="Znovu">
+        <svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5M20 9H9a5 5 0 000 10h4"/></svg><span>Znovu</span>
+      </button>
+      <button id="btnFit" class="tool" title="Zobrazit vše (F)" aria-label="Zobrazit vše">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Vše</span>
+      </button>
+      <button id="btnDelete" class="tool danger" title="Smazat vybranou místnost (Del)" aria-label="Smazat">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg><span>Smazat</span>
+      </button>
+    </nav>
+
+    <canvas id="canvas" aria-label="Plátno půdorysu"></canvas>
+
+    <div id="hint" class="hint">
+      <strong>1.</strong> Nakresli obrys místnosti prstem nebo perem &nbsp;·&nbsp;
+      <strong>2.</strong> ťukni na stěnu &nbsp;·&nbsp; <strong>3.</strong> zmáčkni <b>MĚŘIT</b>
+    </div>
+
+    <aside id="wallPanel" class="wall-panel" hidden>
+      <div class="wp-head">
+        <span id="wpTitle">Stěna</span>
+        <button id="wpClose" class="icon-btn small" aria-label="Zavřít"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div id="wpValue" class="wp-value">—</div>
+      <div id="wpState" class="wp-state"></div>
+      <div class="wp-actions">
+        <button id="wpManual" class="btn">Zadat ručně</button>
+        <button id="wpUsePending" class="btn accent" hidden></button>
+        <button id="wpClear" class="btn ghost">Zrušit měření</button>
+        <button id="wpNext" class="btn ghost">Další stěna ›</button>
+      </div>
+    </aside>
+
+    <div id="roomInfo" class="room-info" hidden></div>
+  </main>
+
+  <footer class="bottombar">
+    <div class="reading">
+      <div id="lastValue" class="last-value">—</div>
+      <div id="lastInfo" class="last-info">poslední měření</div>
+    </div>
+    <button id="btnRef" class="btn ref" title="Odkud se měří">
+      <svg viewBox="0 0 32 16" class="ref-icon"><rect x="2" y="4" width="28" height="8" rx="2"/><rect id="refMark" x="26" y="1" width="4" height="14" rx="1" class="mark"/></svg>
+      <span id="refText">zadní hrana</span>
+    </button>
+    <button id="btnPointer" class="btn" title="Zaměřovací paprsek">Paprsek</button>
+    <button id="btnMeasure" class="btn primary measure" title="Měřit (M)">MĚŘIT</button>
+  </footer>
+
+  <!-- Připojení laseru -->
+  <dialog id="dlgDevice" class="dialog">
+    <form method="dialog">
+      <h2>Laserový metr</h2>
+      <div id="devInfo" class="dev-info">Nepřipojeno</div>
+      <div class="row">
+        <button type="button" id="btnConnect" class="btn primary">Připojit přes Bluetooth</button>
+        <button type="button" id="btnDemo" class="btn">Demo režim (bez laseru)</button>
+        <button type="button" id="btnDisconnect" class="btn ghost" hidden>Odpojit</button>
+      </div>
+      <p id="bleUnsupported" class="note warn" hidden>
+        Tento prohlížeč neumí Web Bluetooth. Použij <b>Chrome</b> nebo <b>Edge</b> (Android, Windows, macOS, Linux,
+        ChromeOS). Na iPadu/iPhonu nainstaluj prohlížeč <b>Bluefy</b> a otevři tuto stránku v něm.
+        Aplikaci můžeš vyzkoušet i v demo režimu.
+      </p>
+      <fieldset id="devSettings" disabled>
+        <legend>Nastavení přístroje</legend>
+        <label class="check"><input type="checkbox" id="optQuick"> Rychlé měření (tlačítko MĚŘIT měří hned, bez zaměření)</label>
+        <div class="calib">
+          <div><b>Kalibrace</b> – změř známou vzdálenost (např. zeď–zeď změřená svinovacím metrem), pak sem zadej skutečnou hodnotu:</div>
+          <div class="row">
+            <input id="calibValue" inputmode="decimal" placeholder="např. 2,500 m">
+            <button type="button" id="btnCalib" class="btn">Kalibrovat podle posledního měření</button>
+          </div>
+          <div id="calibInfo" class="note"></div>
+        </div>
+      </fieldset>
+      <div class="row end"><button class="btn ghost" value="close">Zavřít</button></div>
+    </form>
+  </dialog>
+
+  <!-- Ruční zadání délky -->
+  <dialog id="dlgInput" class="dialog small">
+    <form method="dialog" id="inputForm">
+      <h2 id="inputTitle">Délka stěny</h2>
+      <input id="inputValue" class="big-input" inputmode="decimal" autocomplete="off" placeholder="3,452">
+      <div id="inputHint" class="note">Např. 3,452 · 345 cm · 3452 mm · 11' 4 3/8"</div>
+      <div class="row end">
+        <button class="btn ghost" value="cancel" formnovalidate>Zrušit</button>
+        <button class="btn primary" value="ok" id="inputOk">Uložit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Menu -->
+  <dialog id="dlgMenu" class="dialog">
+    <form method="dialog">
+      <h2>Půdorys</h2>
+      <div class="menu-grid">
+        <button type="button" class="btn" data-act="new">Nový půdorys</button>
+        <button type="button" class="btn" data-act="save">Uložit do projektů</button>
+        <button type="button" class="btn" data-act="png">Export PNG</button>
+        <button type="button" class="btn" data-act="svg">Export SVG</button>
+        <button type="button" class="btn" data-act="dxf">Export DXF (CAD)</button>
+        <button type="button" class="btn" data-act="json">Export JSON</button>
+        <button type="button" class="btn" data-act="import">Import JSON</button>
+        <button type="button" class="btn" data-act="help">Nápověda</button>
+        <a class="btn link-btn" href="flash.html">Nahrát firmware do laseru</a>
+      </div>
+      <h3>Uložené projekty</h3>
+      <ul id="projectList" class="project-list"></ul>
+      <h3>Nastavení</h3>
+      <label class="check"><input type="checkbox" id="optAdvance" checked> Po měření automaticky vybrat další stěnu</label>
+      <label class="check"><input type="checkbox" id="opt45" checked> Povolit šikmé stěny 45°</label>
+      <label class="check"><input type="checkbox" id="optPenOnly"> Kreslit jen perem (prstem posouvat)</label>
+      <div class="row end"><button class="btn ghost" value="close">Zavřít</button></div>
+    </form>
+    <input type="file" id="fileImport" accept="application/json,.json" hidden>
+  </dialog>
+
+  <!-- Nápověda -->
+  <dialog id="dlgHelp" class="dialog">
+    <form method="dialog">
+      <h2>Jak na to</h2>
+      <ol class="help">
+        <li><b>Připoj laser</b> – ťukni nahoře na „Připojit laser“ (nebo zkus demo režim).</li>
+        <li><b>Nakresli místnost</b> jedním tahem. Křivé čáry se samy narovnají na pravé úhly a obrys se uzavře.</li>
+        <li><b>Ťukni na stěnu</b> – zvýrazní se oranžově.</li>
+        <li><b>Přilož laser</b> zadní hranou ke zdi (nebo přepni referenci) a <b>zmáčkni MĚŘIT</b> – na přístroji nebo v aplikaci.</li>
+        <li>Rozměr se zapíše do stěny, celý náčrt se přeměří a vybere se další stěna. Stěny, které jdou dopočítat, mají modrý rámeček (=).</li>
+        <li>Když jsou změřeny všechny stěny a obrys nesedí, aplikace ukáže <b>chybu uzavření</b> – něco bylo změřeno špatně.</li>
+      </ol>
+      <p class="note">Tip: dvojklik/dvojťuk na stěnu = ruční zadání. Klávesy: M měřit, D kreslit, V vybrat, Tab další stěna, Ctrl+Z zpět.</p>
+      <div class="row end"><button class="btn primary" value="close">Rozumím</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
